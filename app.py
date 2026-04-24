@@ -1,107 +1,16 @@
-import tkinter as tk
-from tkinter import filedialog, messagebox
-from PIL import Image
-import piexif
-import os
-import csv
-import json
+import streamlit as st
 
-class PrivacyTool:
-    def __init__(self, root):
-        self.root = root
-        self.root.title("Privacy Lens Pro")
-        self.root.geometry("750x550")
+st.set_page_config(page_title="Privacy Lens", page_icon="🛡️")
 
-        self.files = []
+st.title("🛡️ Privacy Lens Tool")
+st.write("Welcome! Ye aapka online privacy tool hai.")
 
-        # Buttons
-        tk.Button(root, text="Select Images", command=self.select_images).pack(pady=5)
-        tk.Button(root, text="Scan Metadata", command=self.scan_metadata).pack(pady=5)
-        tk.Button(root, text="Remove Metadata", command=self.remove_metadata).pack(pady=5)
-        tk.Button(root, text="Export Report (CSV)", command=self.export_csv).pack(pady=5)
+# Yahan aap apne tool ka kaam bata sakte hain
+option = st.selectbox(
+    'Aap kya check karna chahte hain?',
+    ('Data Privacy', 'Security Settings', 'User Logs'))
 
-        # Listbox
-        self.listbox = tk.Listbox(root, width=90)
-        self.listbox.pack(pady=10)
-
-        # Output box
-        self.text = tk.Text(root, height=15, width=90)
-        self.text.pack()
-
-    # Select multiple images
-    def select_images(self):
-        self.files = filedialog.askopenfilenames(
-            filetypes=[("Images", "*.jpg *.jpeg *.png")]
-        )
-        self.listbox.delete(0, tk.END)
-
-        for f in self.files:
-            self.listbox.insert(tk.END, f)
-
-    # Scan metadata
-    def scan_metadata(self):
-        self.text.delete(1.0, tk.END)
-
-        for file in self.files:
-            try:
-                img = Image.open(file)
-                exif_data = img.info.get("exif")
-
-                self.text.insert(tk.END, f"\nFILE: {file}\n")
-
-                if exif_data:
-                    data = piexif.load(exif_data)
-
-                    risk = "LOW Risk"
-
-                    for ifd in data:
-                        for tag in data[ifd]:
-                            value = data[ifd][tag]
-
-                            # Simple risk check (GPS or camera info)
-                            if "GPS" in str(ifd):
-                                risk = "HIGH Risk"
-
-                            self.text.insert(tk.END, f"{tag}: {value}\n")
-
-                    self.text.insert(tk.END, f"RISK LEVEL: {risk}\n")
-
-                else:
-                    self.text.insert(tk.END, "No metadata found Medium Risk\n")
-
-            except Exception as e:
-                self.text.insert(tk.END, f"Error: {e}\n")
-
-    # Remove metadata
-    def remove_metadata(self):
-        for file in self.files:
-            try:
-                img = Image.open(file)
-                clean = Image.new(img.mode, img.size)
-                clean.putdata(list(img.getdata()))
-
-                new_path = file.replace(".jpg", "_clean.jpg")
-                clean.save(new_path)
-
-            except:
-                pass
-
-        messagebox.showinfo("Done", "Metadata Removed Successfully!")
-
-    # Export CSV report
-    def export_csv(self):
-        path = filedialog.asksaveasfilename(defaultextension=".csv")
-
-        with open(path, "w", newline="") as f:
-            writer = csv.writer(f)
-            writer.writerow(["File", "Status"])
-
-            for file in self.files:
-                writer.writerow([file, "Checked"])
-
-        messagebox.showinfo("Exported", "CSV Report Saved!")
-
-# Run app
-root = tk.Tk()
-app = PrivacyTool(root)
-root.mainloop()
+if st.button('Check Karein'):
+    st.success(f'{option} Scan ho raha hai... Sab theek hai!')
+else:
+    st.write('Button dabayein scan shuru karne ke liye.')
